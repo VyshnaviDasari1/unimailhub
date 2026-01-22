@@ -20,44 +20,78 @@
 
         <ul class="menu">
             <li class="compose" onclick="openCompose()">✉ Compose</li>
-            <li><a href="/inbox">📥 Inbox</a></li>
-            <li><a href="/sent">📤 Sent</a></li>
-            <li><a href="/starred">⭐ Starred</a></li>
+
+            <li th:classappend="${activeTab}=='inbox' ? 'active'">
+                <a href="/home?tab=inbox">📥 Inbox</a>
+            </li>
+
+            <li th:classappend="${activeTab}=='starred' ? 'active'">
+                <a href="/home?tab=starred">⭐ Starred</a>
+            </li>
+
+            <li th:classappend="${activeTab}=='sent' ? 'active'">
+                <a href="/home?tab=sent">📤 Sent</a>
+            </li>
+
             <li>🗑 Trash</li>
         </ul>
     </div>
 
     <!-- Main Content Area -->
     <div class="content">
-        <!-- Blank for now -->
+
+        <h2 th:text="${activeTab == 'starred' ? 'Starred' : (activeTab == 'sent' ? 'Sent' : 'Inbox')}"></h2>
+
+        <div class="mail-list">
+            <div class="mail-item"
+                 th:each="mail : ${mails}"
+                 th:onclick="|window.location.href='/mail/${mail.id}'|">
+
+                <span class="mail-subject" th:text="${mail.subject}"></span>
+
+                <span class="mail-star"
+                      th:text="${mail.starred} ? '★' : '☆'"></span>
+            </div>
+        </div>
+
     </div>
 
 </div>
 
-<!-- Compose Modal -->
-<div id="composeModal" class="modal">
-    <form method="post" action="/send" class="modal-content">
-        <h3>New Message</h3>
-
-        <input type="email" name="toEmail" placeholder="To" required>
-        <input type="text" name="cc" placeholder="Cc">
-        <input type="text" name="subject" placeholder="Subject">
-
-        <textarea name="message" placeholder="Message" required></textarea>
-
-        <div class="actions">
-            <button type="submit">Send</button>
-            <button type="button" onclick="closeCompose()">Close</button>
+<!-- Compose Popup (centered version) -->
+<div id="composeModal" class="compose-overlay">
+    <div class="compose-card">
+        <div class="compose-header">
+            <h3>New Message</h3>
+            <span class="close-btn" onclick="closeCompose()">✕</span>
         </div>
-    </form>
+
+        <form method="post" action="/send" id="composeForm">
+            <input type="email" name="toEmail" placeholder="To" required>
+            <input type="text" name="cc" placeholder="Cc">
+            <input type="text" name="subject" placeholder="Subject">
+
+            <textarea name="message" placeholder="Message" required></textarea>
+
+            <div class="compose-actions">
+                <button type="button" class="clear-btn" onclick="clearCompose()">Clear</button>
+                <button type="submit" class="send-btn">➤</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
 function openCompose() {
-    document.getElementById("composeModal").style.display = "block";
+    document.getElementById("composeModal").style.display = "flex";
 }
+
 function closeCompose() {
     document.getElementById("composeModal").style.display = "none";
+}
+
+function clearCompose() {
+    document.getElementById("composeForm").reset();
 }
 </script>
 

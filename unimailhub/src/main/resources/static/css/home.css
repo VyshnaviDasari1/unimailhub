@@ -1,88 +1,14 @@
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-}
-
-/* Main layout */
-.container {
-    display: flex;
-    height: 100vh;
-}
-
-/* Sidebar */
-.sidebar {
-    width: 220px;
-    background-color: #f4f6f8;
-    padding: 20px;
+* {
     box-sizing: border-box;
 }
 
-.logo {
-    margin-bottom: 30px;
-    color: #333;
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background-color: #f5f7fa;
 }
 
-/* Menu */
-.menu {
-    list-style: none;
-    padding: 0;
-}
-
-.menu li {
-    padding: 12px 10px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    border-radius: 6px;
-    color: #333;
-}
-
-.menu li:hover {
-    background-color: #e0e0e0;
-}
-
-/* Compose button */
-.compose {
-    background-color: #1a73e8;
-    color: white;
-    font-weight: bold;
-}
-
-.compose:hover {
-    background-color: #155ab6;
-}
-
-/* Main content */
-.content {
-    flex: 1;
-    background-color: #ffffff;
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    width: 400px;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 15px;
-}
-
-.modal-content input,
-.modal-content textarea {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 6px;
-}
-
-.modal-content textarea {
-    height: 120px;
-}
-
-.actions {
-    text-align: right;
-}
-
+/* Top bar */
 .topbar {
     height: 50px;
     background-color: #ffffff;
@@ -96,10 +22,274 @@ body {
 .logout-btn {
     text-decoration: none;
     color: #1a73e8;
-    font-weight: bold;
+    font-weight: 600;
 }
 
-.logout-btn:hover {
-    text-decoration: underline;
+/* Layout */
+.container {
+    display: flex;
+    height: calc(100vh - 50px);
 }
 
+/* Sidebar */
+.sidebar {
+    width: 230px;
+    background-color: #ffffff;
+    border-right: 1px solid #ddd;
+    padding: 20px;
+}
+
+.logo {
+    margin-bottom: 25px;
+    color: #1a73e8;
+    font-size: 22px;
+}
+
+.menu {
+    list-style: none;
+    padding: 0;
+}
+
+.menu li {
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.menu li a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+}
+
+.menu li:hover {
+    background-color: #f0f0f0;
+}
+
+/* Compose */
+.compose {
+    background-color: #1a73e8;
+    color: white;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.compose:hover {
+    background-color: #155ab6;
+}
+
+/* Main content */
+.content {
+    flex: 1;
+    padding: 20px;
+    background-color: #f5f7fa;
+}
+
+/* Inbox & lists */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    background: white;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+li a {
+    text-decoration: none;
+    color: #333;
+}
+
+/* Compose modal */
+.modal {
+    display: none;
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 420px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.modal-content {
+    padding: 15px;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.modal-content textarea {
+    height: 140px;
+    resize: none;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.actions button {
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.actions button:first-child {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.actions button:last-child {
+    background-color: #e0e0e0;
+}
+
+/* Compose Overlay */
+.compose-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    background: rgba(0, 0, 0, 0.3);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Compose Card */
+.compose-card {
+    width: 500px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.compose-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.compose-header h3 {
+    margin: 0;
+}
+
+.close-btn {
+    cursor: pointer;
+    font-size: 18px;
+}
+
+/* Inputs */
+.compose-card input,
+.compose-card textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.compose-card textarea {
+    height: 160px;
+    resize: none;
+}
+
+/* Actions */
+.compose-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+/* Clear Button */
+.clear-btn {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.clear-btn:hover {
+    background-color: #eeeeee;
+}
+
+/* Send Button */
+.send-btn {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.send-btn:hover {
+    background-color: #155ab6;
+}
+
+/* Active tab */
+.menu li.active {
+    background-color: #e8f0fe;
+    font-weight: 600;
+}
+
+/* Mail list */
+.mail-list {
+    margin-top: 15px;
+}
+
+.mail-item {
+    background: white;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.mail-item:hover {
+    background-color: #f5f7fa;
+}
+
+.mail-subject {
+    font-size: 15px;
+    color: #333;
+}
+
+.mail-star {
+    font-size: 18px;
+    color: #f4b400;
+}

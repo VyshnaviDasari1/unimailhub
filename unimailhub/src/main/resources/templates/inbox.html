@@ -3,11 +3,11 @@
 <ul>
     <li th:each="mail : ${mails}">
         <a th:href="@{'/mail/' + ${mail.id}}">
-            <b th:text="${mail.fromEmail}"></b> -
+            <b th:text="${mail.fromEmail}"></b> —
             <span th:text="${mail.subject}"></span>
         </a>
 
-        <a th:href="@{'/star/' + ${mail.id}}" style="margin-left:10px">
+        <a th:href="@{'/star/' + ${mail.id}}">
             <span th:text="${mail.starred} ? '★' : '☆'"></span>
         </a>
     </li>

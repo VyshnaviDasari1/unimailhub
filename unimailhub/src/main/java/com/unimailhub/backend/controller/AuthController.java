@@ -22,6 +22,8 @@ public class AuthController {
         this.mailService = mailService;
     }
 
+    /* ===================== AUTH ===================== */
+
     @GetMapping("/login")
     public String loginPage() {
         return "login";
@@ -30,10 +32,12 @@ public class AuthController {
     @PostMapping("/login")
     public String login(User user, HttpSession session, Model model) {
         String result = userService.login(user);
-        if (!result.equals("success")) {
+
+        if (!"success".equals(result)) {
             model.addAttribute("error", "Invalid credentials");
             return "login";
         }
+
         session.setAttribute("email", user.getEmail());
         return "redirect:/home";
     }
@@ -45,50 +49,61 @@ public class AuthController {
 
     @PostMapping("/register")
     public String register(User user, Model model) {
-
         String result = userService.register(user);
 
         if (!"success".equals(result)) {
-        model.addAttribute("error", result);
-        return "register";   // stays on register page with error
+            model.addAttribute("error", result);
+            return "register";
         }
 
-        return "redirect:/login"; // go to login after successful registration
-    }
-
-
-
-    @GetMapping("/home")
-    public String home() {
-        return "home";
-    }
-
-    @PostMapping("/send")
-    public String sendMail(Mail mail, HttpSession session) {
-        String fromEmail = (String) session.getAttribute("email");
-        mail.setFromEmail(fromEmail);
-        mailService.sendMail(mail);
-        return "redirect:/home";
-    }
-
-    @GetMapping("/inbox")
-    public String inbox(HttpSession session, Model model) {
-        String email = (String) session.getAttribute("email");
-        model.addAttribute("mails", mailService.inbox(email));
-        return "inbox";
-    }
-
-    @GetMapping("/sent")
-    public String sent(HttpSession session, Model model) {
-        String email = (String) session.getAttribute("email");
-        model.addAttribute("mails", mailService.sent(email));
-        return "sent";
+        return "redirect:/login";
     }
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
-        session.invalidate();   // clears logged-in user
+        session.invalidate();
         return "redirect:/login";
+    }
+
+    /* ===================== HOME (CENTER PANEL LOGIC) ===================== */
+
+    @GetMapping("/home")
+    public String home(
+            @RequestParam(defaultValue = "inbox") String tab,
+            HttpSession session,
+            Model model) {
+
+        String email = (String) session.getAttribute("email");
+
+        if (email == null) {
+            return "redirect:/login";
+        }
+
+        if ("starred".equals(tab)) {
+            model.addAttribute("mails", mailService.starred(email));
+        } else if ("sent".equals(tab)) {
+            model.addAttribute("mails", mailService.sent(email));
+        } else {
+            model.addAttribute("mails", mailService.inbox(email));
+        }
+
+        model.addAttribute("activeTab", tab);
+        return "home";
+    }
+
+    /* ===================== MAIL ACTIONS ===================== */
+
+    @PostMapping("/send")
+    public String sendMail(Mail mail, HttpSession session) {
+        String fromEmail = (String) session.getAttribute("email");
+
+        if (fromEmail == null) {
+            return "redirect:/login";
+        }
+
+        mail.setFromEmail(fromEmail);
+        mailService.sendMail(mail);
+        return "redirect:/home";
     }
 
     @GetMapping("/mail/{id}")
@@ -99,18 +114,10 @@ public class AuthController {
     }
 
     @GetMapping("/star/{id}")
-    public String starMail(@PathVariable Long id) {
+    public String toggleStar(@PathVariable Long id,
+                             @RequestParam(defaultValue = "inbox") String tab) {
+
         mailService.toggleStar(id);
-        return "redirect:/inbox";
+        return "redirect:/home?tab=" + tab;
     }
-
-    @GetMapping("/starred")
-    public String starred(HttpSession session, Model model) {
-        String email = (String) session.getAttribute("email");
-        model.addAttribute("mails", mailService.starred(email));
-        return "starred";
-    }
-
-
 }
-
