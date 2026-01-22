@@ -19,11 +19,11 @@ public class MailService {
     }
 
     public List<Mail> inbox(String email) {
-        return repo.findByToEmailOrderByCreatedAtDesc(email);
+        return repo.findByToEmailAndTrashedFalseOrderByCreatedAtDesc(email);
     }
 
     public List<Mail> sent(String email) {
-        return repo.findByFromEmailOrderByCreatedAtDesc(email);
+        return repo.findByFromEmailAndTrashedFalseOrderByCreatedAtDesc(email);
     }
 
     public Mail getMail(Long id) {
@@ -39,7 +39,9 @@ public class MailService {
     }
 
     public List<Mail> starred(String email) {
-        return repo.findByToEmailAndStarredTrueOrderByCreatedAtDesc(email);
+        return repo.findByStarredTrueAndTrashedFalseAndToEmailOrStarredTrueAndTrashedFalseAndFromEmailOrderByCreatedAtDesc(
+                email, email
+        );
     }
 
     public List<Mail> searchInbox(String email, String keyword) {
@@ -52,6 +54,21 @@ public class MailService {
 
     public List<Mail> searchStarred(String email, String keyword) {
         return repo.findByToEmailAndStarredTrueAndSubjectContainingIgnoreCaseOrderByCreatedAtDesc(email, keyword);
+    }
+
+    public List<Mail> trash(String email) {
+        return repo.findByTrashedTrueAndToEmailOrTrashedTrueAndFromEmailOrderByCreatedAtDesc(
+                email, email
+        );
+    }
+
+    public void moveToTrash(Long id) {
+        Mail mail = repo.findById(id).orElse(null);
+        if (mail != null) {
+            mail.setTrashed(true);
+            mail.setStarred(false); // optional: auto-remove star
+            repo.save(mail);
+        }
     }
 
 }

@@ -49,7 +49,10 @@
                 <a href="/home?tab=sent">📤 Sent</a>
             </li>
 
-            <li>🗑 Trash</li>
+            <li th:classappend="${activeTab}=='trash' ? 'active'">
+                <a href="/home?tab=trash">🗑 Trash</a>
+            </li>
+
         </ul>
     </div>
 
@@ -69,17 +72,30 @@
         </form>
 
 
-        <div class="mail-list">
-            <div class="mail-item"
-                 th:each="mail : ${mails}"
-                 th:onclick="|window.location.href='/mail/${mail.id}'|">
+        <!-- Mail List -->
 
-                <span class="mail-subject" th:text="${mail.subject}"></span>
+    <div class="mail-item" th:each="mail : ${mails}">
+        <span class="mail-subject"
+            th:text="${mail.subject}"
+            th:onclick="|window.location.href='/mail/${mail.id}'|">
+        </span>
 
-                <span class="mail-star"
-                      th:text="${mail.starred} ? '★' : '☆'"></span>
-            </div>
+        <div class="mail-actions">
+
+            <!-- Star -->
+            <a class="mail-star"
+            th:href="@{'/star/' + ${mail.id} + '?tab=' + ${activeTab}}"
+            th:text="${mail.starred} ? '★' : '☆'">
+            </a>
+
+            <!-- Trash -->
+            <a class="mail-trash"
+            th:href="@{'/trash/' + ${mail.id} + '?tab=' + ${activeTab}}">
+                🗑
+            </a>
+
         </div>
+    </div>
 
     </div>
 

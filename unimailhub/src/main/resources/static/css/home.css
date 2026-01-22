@@ -290,8 +290,14 @@ li a {
 }
 
 .mail-star {
-    font-size: 18px;
+    font-size: 20px;
     color: #f4b400;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.mail-star:hover {
+    transform: scale(1.1);
 }
 
 /* Search bar */
@@ -372,4 +378,20 @@ li a {
     color: #666;
     margin-bottom: 6px;
     word-break: break-all;
+}
+
+.mail-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.mail-trash {
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.mail-trash:hover {
+    color: red;
 }

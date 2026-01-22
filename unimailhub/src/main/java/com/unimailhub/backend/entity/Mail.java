@@ -16,6 +16,8 @@ public class Mail {
     private String cc;
     private String subject;
     private boolean starred = false;
+    private boolean trashed = false;
+
 
     @Column(length = 5000)
     private String message;
@@ -54,4 +56,11 @@ public class Mail {
         this.starred = starred;
     }
 
+    public boolean isTrashed() {
+        return trashed;
+    }
+
+    public void setTrashed(boolean trashed) {
+        this.trashed = trashed;
+    }
 }

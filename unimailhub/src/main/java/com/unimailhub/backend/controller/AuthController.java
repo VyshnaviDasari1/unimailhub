@@ -67,7 +67,7 @@ public class AuthController {
 
     /* ===================== HOME (CENTER PANEL LOGIC) ===================== */
 
-   @GetMapping("/home")
+    @GetMapping("/home")
     public String home(
             @RequestParam(defaultValue = "inbox") String tab,
             @RequestParam(required = false) String search,
@@ -82,19 +82,30 @@ public class AuthController {
 
         boolean hasSearch = (search != null && !search.trim().isEmpty());
 
-        if ("starred".equals(tab)) {
+        if ("trash".equals(tab)) {
+
+            // Trash tab (no search for now – optional later)
+            model.addAttribute("mails", mailService.trash(email));
+
+        } else if ("starred".equals(tab)) {
+
             model.addAttribute("mails",
                     hasSearch
                             ? mailService.searchStarred(email, search)
                             : mailService.starred(email)
             );
+
         } else if ("sent".equals(tab)) {
+
             model.addAttribute("mails",
                     hasSearch
                             ? mailService.searchSent(email, search)
                             : mailService.sent(email)
             );
+
         } else {
+
+            // Inbox (default)
             model.addAttribute("mails",
                     hasSearch
                             ? mailService.searchInbox(email, search)
@@ -103,10 +114,8 @@ public class AuthController {
         }
 
         model.addAttribute("activeTab", tab);
-        model.addAttribute("search", search); // to keep text in input
-
+        model.addAttribute("search", search);
         model.addAttribute("userEmail", email);
-
 
         return "home";
     }
@@ -141,4 +150,14 @@ public class AuthController {
         mailService.toggleStar(id);
         return "redirect:/home?tab=" + tab;
     }
+
+    @GetMapping("/trash/{id}")
+    public String moveToTrash(@PathVariable Long id,
+                            @RequestParam(defaultValue = "inbox") String tab) {
+
+        mailService.moveToTrash(id);
+        return "redirect:/home?tab=" + tab;
+    }
+
+
 }

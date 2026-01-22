@@ -24,5 +24,21 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
     List<Mail> findByToEmailAndStarredTrueAndSubjectContainingIgnoreCaseOrderByCreatedAtDesc(
             String toEmail, String subject);
 
+    List<Mail> findByStarredTrueAndToEmailOrStarredTrueAndFromEmailOrderByCreatedAtDesc(
+        String toEmail, String fromEmail);
+
+    // Inbox (not trashed)
+    List<Mail> findByToEmailAndTrashedFalseOrderByCreatedAtDesc(String toEmail);
+
+    // Sent (not trashed)
+    List<Mail> findByFromEmailAndTrashedFalseOrderByCreatedAtDesc(String fromEmail);
+
+    // Starred (not trashed)
+    List<Mail> findByStarredTrueAndTrashedFalseAndToEmailOrStarredTrueAndTrashedFalseAndFromEmailOrderByCreatedAtDesc(
+            String toEmail, String fromEmail);
+
+    // Trash
+    List<Mail> findByTrashedTrueAndToEmailOrTrashedTrueAndFromEmailOrderByCreatedAtDesc(
+            String toEmail, String fromEmail);
 
 }
