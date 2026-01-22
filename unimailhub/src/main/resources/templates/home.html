@@ -74,28 +74,43 @@
 
         <!-- Mail List -->
 
-    <div class="mail-item" th:each="mail : ${mails}">
-        <span class="mail-subject"
-            th:text="${mail.subject}"
-            th:onclick="|window.location.href='/mail/${mail.id}'|">
-        </span>
+    <div class="mail-list">
 
-        <div class="mail-actions">
+        <div class="mail-item" th:each="mail : ${mails}">
 
-            <!-- Star -->
-            <a class="mail-star"
-            th:href="@{'/star/' + ${mail.id} + '?tab=' + ${activeTab}}"
-            th:text="${mail.starred} ? '★' : '☆'">
-            </a>
+            <!-- Subject (click opens mail) -->
+            <span class="mail-subject"
+                th:text="${mail.subject}"
+                th:onclick="|window.location.href='/mail/${mail.id}'|">
+            </span>
 
-            <!-- Trash -->
-            <a class="mail-trash"
-            th:href="@{'/trash/' + ${mail.id} + '?tab=' + ${activeTab}}">
-                🗑
-            </a>
+            <div class="mail-actions">
+
+                <!-- Star (only outside Trash) -->
+                <a th:if="${activeTab != 'trash'}"
+                class="mail-star"
+                th:href="@{'/star/' + ${mail.id} + '?tab=' + ${activeTab}}"
+                th:text="${mail.starred} ? '★' : '☆'">
+                </a>
+
+                <!-- Soft Trash (outside Trash) -->
+                <a th:if="${activeTab != 'trash'}"
+                class="mail-trash"
+                th:href="@{'/trash/' + ${mail.id} + '?tab=' + ${activeTab}}">
+                    🗑
+                </a>
+
+                <!-- Permanent Delete (inside Trash only) -->
+                <a th:if="${activeTab == 'trash'}"
+                class="mail-delete"
+                href="#"
+                th:onclick="|confirmDelete(${mail.id})|">
+                    ❌
+                </a>
+
+            </div>
 
         </div>
-    </div>
 
     </div>
 
@@ -149,6 +164,18 @@ window.onclick = function(event) {
         if (menu) menu.style.display = "none";
     }
 }
+
+function confirmDelete(mailId) {
+    const confirmAction = confirm(
+        "Are you sure you want to delete this mail permanently?\nThis action cannot be undone."
+    );
+
+    if (confirmAction) {
+        window.location.href = "/delete/" + mailId;
+    }
+}
+
+
 </script>
 
 </body>

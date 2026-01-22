@@ -159,5 +159,9 @@ public class AuthController {
         return "redirect:/home?tab=" + tab;
     }
 
-
+    @GetMapping("/delete/{id}")
+    public String deleteMailPermanently(@PathVariable Long id) {
+        mailService.deletePermanently(id);
+        return "redirect:/home?tab=trash";
+    }
 }

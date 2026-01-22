@@ -395,3 +395,14 @@ li a {
 .mail-trash:hover {
     color: red;
 }
+
+.mail-delete {
+    font-size: 16px;
+    color: red;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.mail-delete:hover {
+    transform: scale(1.1);
+}

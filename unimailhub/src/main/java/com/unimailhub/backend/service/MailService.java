@@ -71,4 +71,8 @@ public class MailService {
         }
     }
 
+    public void deletePermanently(Long id) {
+        repo.deleteById(id);
+    }
+
 }
