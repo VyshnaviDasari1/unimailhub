@@ -1,0 +1,8 @@
+<h2>Sent Mails</h2>
+<ul>
+    <li th:each="mail : ${mails}">
+        <b th:text="${mail.toEmail}"></b> -
+        <span th:text="${mail.subject}"></span>
+    </li>
+</ul>
+<a href="/home">Back</a>

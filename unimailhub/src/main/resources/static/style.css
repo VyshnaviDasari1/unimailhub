@@ -1,0 +1,26 @@
+body {
+    font-family: Arial;
+}
+
+input {
+    display: block;
+    margin: 10px 0;
+    padding: 8px;
+}
+
+button {
+    padding: 8px 15px;
+}
+
+.sidebar {
+    width: 200px;
+    height: 100vh;
+    background: #f0f0f0;
+    float: left;
+    padding: 15px;
+}
+
+.content {
+    margin-left: 220px;
+    padding: 20px;
+}

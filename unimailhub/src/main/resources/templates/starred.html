@@ -1,0 +1,12 @@
+<h2>Starred Mails</h2>
+
+<ul>
+    <li th:each="mail : ${mails}">
+        <a th:href="@{'/mail/' + ${mail.id}}">
+            <b th:text="${mail.fromEmail}"></b> -
+            <span th:text="${mail.subject}"></span>
+        </a>
+    </li>
+</ul>
+
+<a href="/home">Back</a>

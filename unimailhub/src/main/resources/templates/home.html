@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>UniMailHub</title>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+    <a href="/logout" class="logout-btn">Logout</a>
+</div>
+
+<!-- Main Layout -->
+<div class="container">
+
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <h2 class="logo">UniMailHub</h2>
+
+        <ul class="menu">
+            <li class="compose" onclick="openCompose()">✉ Compose</li>
+            <li><a href="/inbox">📥 Inbox</a></li>
+            <li><a href="/sent">📤 Sent</a></li>
+            <li><a href="/starred">⭐ Starred</a></li>
+            <li>🗑 Trash</li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content">
+        <!-- Blank for now -->
+    </div>
+
+</div>
+
+<!-- Compose Modal -->
+<div id="composeModal" class="modal">
+    <form method="post" action="/send" class="modal-content">
+        <h3>New Message</h3>
+
+        <input type="email" name="toEmail" placeholder="To" required>
+        <input type="text" name="cc" placeholder="Cc">
+        <input type="text" name="subject" placeholder="Subject">
+
+        <textarea name="message" placeholder="Message" required></textarea>
+
+        <div class="actions">
+            <button type="submit">Send</button>
+            <button type="button" onclick="closeCompose()">Close</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function openCompose() {
+    document.getElementById("composeModal").style.display = "block";
+}
+function closeCompose() {
+    document.getElementById("composeModal").style.display = "none";
+}
+</script>
+
+</body>
+</html>

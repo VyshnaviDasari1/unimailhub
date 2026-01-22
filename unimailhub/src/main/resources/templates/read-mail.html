@@ -1,0 +1,17 @@
+<h2 th:text="${mail.subject}"></h2>
+
+<p><b>From:</b> <span th:text="${mail.fromEmail}"></span></p>
+<p><b>To:</b> <span th:text="${mail.toEmail}"></span></p>
+<p><b>CC:</b> <span th:text="${mail.cc}"></span></p>
+
+<hr>
+
+<p th:text="${mail.message}"></p>
+
+<br>
+
+<a th:href="@{'/star/' + ${mail.id}}">
+    <button th:text="${mail.starred} ? 'Unstar' : 'Star'"></button>
+</a>
+
+<a href="/inbox">Back to Inbox</a>

@@ -1,0 +1,105 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Main layout */
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 220px;
+    background-color: #f4f6f8;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.logo {
+    margin-bottom: 30px;
+    color: #333;
+}
+
+/* Menu */
+.menu {
+    list-style: none;
+    padding: 0;
+}
+
+.menu li {
+    padding: 12px 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+    color: #333;
+}
+
+.menu li:hover {
+    background-color: #e0e0e0;
+}
+
+/* Compose button */
+.compose {
+    background-color: #1a73e8;
+    color: white;
+    font-weight: bold;
+}
+
+.compose:hover {
+    background-color: #155ab6;
+}
+
+/* Main content */
+.content {
+    flex: 1;
+    background-color: #ffffff;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 400px;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 15px;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 6px;
+}
+
+.modal-content textarea {
+    height: 120px;
+}
+
+.actions {
+    text-align: right;
+}
+
+.topbar {
+    height: 50px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.logout-btn {
+    text-decoration: none;
+    color: #1a73e8;
+    font-weight: bold;
+}
+
+.logout-btn:hover {
+    text-decoration: underline;
+}
+
