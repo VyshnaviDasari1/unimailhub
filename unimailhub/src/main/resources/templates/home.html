@@ -79,10 +79,11 @@
         <div class="mail-item" th:each="mail : ${mails}">
 
             <!-- Subject (click opens mail) -->
-            <span class="mail-subject"
-                th:text="${mail.subject}"
-                th:onclick="|window.location.href='/mail/${mail.id}'|">
-            </span>
+            <a class="mail-subject"
+            th:text="${mail.subject}"
+            th:href="@{/home(tab=${activeTab}, read=${mail.id})}">
+            </a>
+
 
             <div class="mail-actions">
 
@@ -138,6 +139,39 @@
         </form>
     </div>
 </div>
+
+<!-- Read Mail Popup -->
+<div class="compose-overlay"
+     th:if="${selectedMail != null}"
+     style="display:flex">
+
+    <div class="compose-card">
+
+        <!-- Header -->
+        <div class="compose-header">
+            <a class="close-btn"
+            th:href="@{/home(tab=${activeTab})}">
+                ←
+            </a>
+            <h3 th:text="${selectedMail.subject}"></h3>
+        </div>
+
+        <!-- Sub header -->
+        <div class="mail-sub-header">
+            <p><b>From:</b> <span th:text="${selectedMail.fromEmail}"></span></p>
+            <p><b>To:</b> <span th:text="${selectedMail.toEmail}"></span></p>
+        </div>
+
+        <hr>
+
+        <!-- Message body -->
+        <div class="mail-body">
+            <p th:text="${selectedMail.message}"></p>
+        </div>
+
+    </div>
+</div>
+
 
 <script>
 function openCompose() {

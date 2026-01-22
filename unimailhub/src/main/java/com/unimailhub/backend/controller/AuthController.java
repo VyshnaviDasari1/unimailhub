@@ -71,46 +71,38 @@ public class AuthController {
     public String home(
             @RequestParam(defaultValue = "inbox") String tab,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long read,
             HttpSession session,
             Model model) {
 
         String email = (String) session.getAttribute("email");
-
-        if (email == null) {
-            return "redirect:/login";
-        }
+        if (email == null) return "redirect:/login";
 
         boolean hasSearch = (search != null && !search.trim().isEmpty());
 
         if ("trash".equals(tab)) {
-
-            // Trash tab (no search for now – optional later)
             model.addAttribute("mails", mailService.trash(email));
-
         } else if ("starred".equals(tab)) {
-
             model.addAttribute("mails",
                     hasSearch
                             ? mailService.searchStarred(email, search)
-                            : mailService.starred(email)
-            );
-
+                            : mailService.starred(email));
         } else if ("sent".equals(tab)) {
-
             model.addAttribute("mails",
                     hasSearch
                             ? mailService.searchSent(email, search)
-                            : mailService.sent(email)
-            );
-
+                            : mailService.sent(email));
         } else {
-
-            // Inbox (default)
             model.addAttribute("mails",
                     hasSearch
                             ? mailService.searchInbox(email, search)
-                            : mailService.inbox(email)
-            );
+                            : mailService.inbox(email));
+        }
+
+        // 🔹 Read mail (popup)
+        if (read != null) {
+            Mail selectedMail = mailService.getMail(read);
+            model.addAttribute("selectedMail", selectedMail);
         }
 
         model.addAttribute("activeTab", tab);

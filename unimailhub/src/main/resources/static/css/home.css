@@ -201,9 +201,13 @@ li a {
 }
 
 .close-btn {
+    font-size: 20px;
     cursor: pointer;
-    font-size: 18px;
+    text-decoration: none;
+    color: #333;
+    margin-right: 10px;
 }
+
 
 /* Inputs */
 .compose-card input,
@@ -284,9 +288,16 @@ li a {
     background-color: #f5f7fa;
 }
 
+
 .mail-subject {
-    font-size: 15px;
+    flex: 1;
+    cursor: pointer;
+    text-decoration: none;
     color: #333;
+}
+
+.mail-subject:hover {
+    text-decoration: underline;
 }
 
 .mail-star {
@@ -405,4 +416,21 @@ li a {
 
 .mail-delete:hover {
     transform: scale(1.1);
+}
+
+.mail-sub-header {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+.mail-sub-header p {
+    margin: 4px 0;
+}
+
+.mail-body {
+    margin-top: 15px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
 }
