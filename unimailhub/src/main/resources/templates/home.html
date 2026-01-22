@@ -8,8 +8,24 @@
 
 <!-- Top Bar -->
 <div class="topbar">
-    <a href="/logout" class="logout-btn">Logout</a>
+
+
+    <!-- Profile Section -->
+    <div class="profile-container" onclick="toggleProfileMenu()">
+        <div class="profile-icon"
+             th:text="${#strings.substring(userEmail,0,1).toUpperCase()}">
+        </div>
+
+        <div id="profileMenu" class="profile-menu">
+            <p class="profile-email" th:text="${userEmail}"></p>
+            <hr>
+            <a href="#">⚙ Settings</a>
+            <a href="/logout">🚪 Logout</a>
+        </div>
+    </div>
+
 </div>
+
 
 <!-- Main Layout -->
 <div class="container">
@@ -41,6 +57,17 @@
     <div class="content">
 
         <h2 th:text="${activeTab == 'starred' ? 'Starred' : (activeTab == 'sent' ? 'Sent' : 'Inbox')}"></h2>
+
+        <!-- Search Bar -->
+        <form method="get" action="/home" class="search-bar">
+            <input type="hidden" name="tab" th:value="${activeTab}">
+            <input type="text"
+                name="search"
+                placeholder="Search mail by subject"
+                th:value="${search}">
+            <button type="submit">🔍</button>
+        </form>
+
 
         <div class="mail-list">
             <div class="mail-item"
@@ -92,6 +119,19 @@ function closeCompose() {
 
 function clearCompose() {
     document.getElementById("composeForm").reset();
+}
+
+function toggleProfileMenu() {
+    const menu = document.getElementById("profileMenu");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+// Close dropdown when clicking outside
+window.onclick = function(event) {
+    if (!event.target.closest('.profile-container')) {
+        const menu = document.getElementById("profileMenu");
+        if (menu) menu.style.display = "none";
+    }
 }
 </script>
 

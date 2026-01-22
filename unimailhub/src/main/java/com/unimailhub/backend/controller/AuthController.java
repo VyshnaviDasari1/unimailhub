@@ -67,9 +67,10 @@ public class AuthController {
 
     /* ===================== HOME (CENTER PANEL LOGIC) ===================== */
 
-    @GetMapping("/home")
+   @GetMapping("/home")
     public String home(
             @RequestParam(defaultValue = "inbox") String tab,
+            @RequestParam(required = false) String search,
             HttpSession session,
             Model model) {
 
@@ -79,17 +80,37 @@ public class AuthController {
             return "redirect:/login";
         }
 
+        boolean hasSearch = (search != null && !search.trim().isEmpty());
+
         if ("starred".equals(tab)) {
-            model.addAttribute("mails", mailService.starred(email));
+            model.addAttribute("mails",
+                    hasSearch
+                            ? mailService.searchStarred(email, search)
+                            : mailService.starred(email)
+            );
         } else if ("sent".equals(tab)) {
-            model.addAttribute("mails", mailService.sent(email));
+            model.addAttribute("mails",
+                    hasSearch
+                            ? mailService.searchSent(email, search)
+                            : mailService.sent(email)
+            );
         } else {
-            model.addAttribute("mails", mailService.inbox(email));
+            model.addAttribute("mails",
+                    hasSearch
+                            ? mailService.searchInbox(email, search)
+                            : mailService.inbox(email)
+            );
         }
 
         model.addAttribute("activeTab", tab);
+        model.addAttribute("search", search); // to keep text in input
+
+        model.addAttribute("userEmail", email);
+
+
         return "home";
     }
+
 
     /* ===================== MAIL ACTIONS ===================== */
 

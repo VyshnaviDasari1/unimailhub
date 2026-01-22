@@ -12,4 +12,17 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
 
     List<Mail> findByToEmailAndStarredTrueOrderByCreatedAtDesc(String toEmail);
 
+    // Inbox search
+    List<Mail> findByToEmailAndSubjectContainingIgnoreCaseOrderByCreatedAtDesc(
+            String toEmail, String subject);
+
+    // Sent search
+    List<Mail> findByFromEmailAndSubjectContainingIgnoreCaseOrderByCreatedAtDesc(
+            String fromEmail, String subject);
+
+    // Starred search
+    List<Mail> findByToEmailAndStarredTrueAndSubjectContainingIgnoreCaseOrderByCreatedAtDesc(
+            String toEmail, String subject);
+
+
 }

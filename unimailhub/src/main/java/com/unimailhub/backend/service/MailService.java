@@ -42,4 +42,16 @@ public class MailService {
         return repo.findByToEmailAndStarredTrueOrderByCreatedAtDesc(email);
     }
 
+    public List<Mail> searchInbox(String email, String keyword) {
+    return repo.findByToEmailAndSubjectContainingIgnoreCaseOrderByCreatedAtDesc(email, keyword);
+    }
+
+    public List<Mail> searchSent(String email, String keyword) {
+        return repo.findByFromEmailAndSubjectContainingIgnoreCaseOrderByCreatedAtDesc(email, keyword);
+    }
+
+    public List<Mail> searchStarred(String email, String keyword) {
+        return repo.findByToEmailAndStarredTrueAndSubjectContainingIgnoreCaseOrderByCreatedAtDesc(email, keyword);
+    }
+
 }
