@@ -6,11 +6,9 @@
 </head>
 <body>
 
-<!-- Top Bar -->
+<!-- ================= TOP BAR ================= -->
 <div class="topbar">
 
-
-    <!-- Profile Section -->
     <div class="profile-container" onclick="toggleProfileMenu()">
         <div class="profile-icon"
              th:text="${#strings.substring(userEmail,0,1).toUpperCase()}">
@@ -19,18 +17,17 @@
         <div id="profileMenu" class="profile-menu">
             <p class="profile-email" th:text="${userEmail}"></p>
             <hr>
-            <a href="#">⚙ Settings</a>
+            <a href="/home?tab=settings">⚙ Settings</a>
             <a href="/logout">🚪 Logout</a>
         </div>
     </div>
 
 </div>
 
-
-<!-- Main Layout -->
+<!-- ================= MAIN LAYOUT ================= -->
 <div class="container">
 
-    <!-- Left Sidebar -->
+    <!-- ===== LEFT SIDEBAR ===== -->
     <div class="sidebar">
         <h2 class="logo">UniMailHub</h2>
 
@@ -52,72 +49,111 @@
             <li th:classappend="${activeTab}=='trash' ? 'active'">
                 <a href="/home?tab=trash">🗑 Trash</a>
             </li>
-
         </ul>
     </div>
 
-    <!-- Main Content Area -->
+    <!-- ===== MAIN CONTENT (CENTER) ===== -->
     <div class="content">
 
-        <h2 th:text="${activeTab == 'starred' ? 'Starred' : (activeTab == 'sent' ? 'Sent' : 'Inbox')}"></h2>
+        <!-- Title -->
+        <h2 th:text="${activeTab == 'starred' ? 'Starred'
+            : (activeTab == 'sent' ? 'Sent'
+            : (activeTab == 'trash' ? 'Trash'
+            : (activeTab == 'settings' ? 'Settings' : 'Inbox')))}">
+        </h2>
 
-        <!-- Search Bar -->
-        <form method="get" action="/home" class="search-bar">
+        <!-- Search Bar (hide in settings) -->
+        <form th:if="${activeTab != 'settings'}"
+              method="get"
+              action="/home"
+              class="search-bar">
+
             <input type="hidden" name="tab" th:value="${activeTab}">
             <input type="text"
-                name="search"
-                placeholder="Search mail by subject"
-                th:value="${search}">
+                   name="search"
+                   placeholder="Search mail by subject"
+                   th:value="${search}">
             <button type="submit">🔍</button>
         </form>
 
+        <!-- ================= MAIL LIST (CENTERED) ================= -->
+        <div th:if="${activeTab != 'settings'}" class="mail-list">
 
-        <!-- Mail List -->
+            <div class="mail-item" th:each="mail : ${mails}">
 
-    <div class="mail-list">
-
-        <div class="mail-item" th:each="mail : ${mails}">
-
-            <!-- Subject (click opens mail) -->
-            <a class="mail-subject"
-            th:text="${mail.subject}"
-            th:href="@{/home(tab=${activeTab}, read=${mail.id})}">
-            </a>
-
-
-            <div class="mail-actions">
-
-                <!-- Star (only outside Trash) -->
-                <a th:if="${activeTab != 'trash'}"
-                class="mail-star"
-                th:href="@{'/star/' + ${mail.id} + '?tab=' + ${activeTab}}"
-                th:text="${mail.starred} ? '★' : '☆'">
+                <a class="mail-subject"
+                   th:text="${mail.subject}"
+                   th:href="@{/home(tab=${activeTab}, read=${mail.id})}">
                 </a>
 
-                <!-- Soft Trash (outside Trash) -->
-                <a th:if="${activeTab != 'trash'}"
-                class="mail-trash"
-                th:href="@{'/trash/' + ${mail.id} + '?tab=' + ${activeTab}}">
-                    🗑
-                </a>
+                <div class="mail-actions">
 
-                <!-- Permanent Delete (inside Trash only) -->
-                <a th:if="${activeTab == 'trash'}"
-                class="mail-delete"
-                href="#"
-                th:onclick="|confirmDelete(${mail.id})|">
-                    ❌
-                </a>
+                    <a th:if="${activeTab != 'trash'}"
+                       class="mail-star"
+                       th:href="@{'/star/' + ${mail.id} + '?tab=' + ${activeTab}}"
+                       th:text="${mail.starred} ? '★' : '☆'">
+                    </a>
 
+                    <a th:if="${activeTab != 'trash'}"
+                       class="mail-trash"
+                       th:href="@{'/trash/' + ${mail.id} + '?tab=' + ${activeTab}}">
+                        🗑
+                    </a>
+
+                    <a th:if="${activeTab == 'trash'}"
+                       class="mail-delete"
+                       href="#"
+                       th:onclick="|confirmDelete(${mail.id})|">
+                        ❌
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SETTINGS PANEL ================= -->
+        <div th:if="${activeTab == 'settings'}" class="settings-panel">
+
+            <a href="/home?tab=inbox" class="settings-back-btn">← Back to Inbox</a>
+
+            <h2>Settings</h2>
+
+            <div class="settings-card">
+                <h3>Add Another Email</h3>
+                <form method="post" action="/settings/save">
+                    <input type="email" name="linkedEmail" placeholder="Email address" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit">Save</button>
+                </form>
             </div>
 
+            <div class="settings-card">
+                <h3>Linked Accounts</h3>
+                <ul>
+                    <li th:each="acc : ${linkedAccounts}">
+                        <span th:text="${acc.linkedEmail}"></span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="settings-card about-card">
+                <h3>About UniMailHub</h3>
+                <p>
+                    <b>UniMailHub</b> is a web-based email management system inspired by Gmail.
+                    It allows users to send and receive emails with attachments, manage inboxes,
+                    starred mails, search emails, and securely delete messages.
+                </p>
+                <p>
+                    Built using Spring Boot, Thymeleaf, and MySQL, this application demonstrates
+                    a real-world enterprise email workflow.
+                </p>
+            </div>
         </div>
 
     </div>
-
 </div>
 
-<!-- Compose Popup (centered version) -->
+<!-- ================= COMPOSE MODAL ================= -->
 <div id="composeModal" class="compose-overlay">
     <div class="compose-card">
         <div class="compose-header">
@@ -125,10 +161,14 @@
             <span class="close-btn" onclick="closeCompose()">✕</span>
         </div>
 
-        <form method="post" action="/send" id="composeForm">
+        <form method="post" action="/send" enctype="multipart/form-data" id="composeForm">
             <input type="email" name="toEmail" placeholder="To" required>
             <input type="text" name="cc" placeholder="Cc">
             <input type="text" name="subject" placeholder="Subject">
+
+            <label class="attach-btn">📎 Attach
+                <input type="file" name="files" multiple hidden>
+            </label>
 
             <textarea name="message" placeholder="Message" required></textarea>
 
@@ -140,23 +180,18 @@
     </div>
 </div>
 
-<!-- Read Mail Popup -->
+<!-- ================= READ MAIL POPUP ================= -->
 <div class="compose-overlay"
      th:if="${selectedMail != null}"
      style="display:flex">
 
     <div class="compose-card">
 
-        <!-- Header -->
         <div class="compose-header">
-            <a class="close-btn"
-            th:href="@{/home(tab=${activeTab})}">
-                ←
-            </a>
+            <a class="close-btn" th:href="@{/home(tab=${activeTab})}">←</a>
             <h3 th:text="${selectedMail.subject}"></h3>
         </div>
 
-        <!-- Sub header -->
         <div class="mail-sub-header">
             <p><b>From:</b> <span th:text="${selectedMail.fromEmail}"></span></p>
             <p><b>To:</b> <span th:text="${selectedMail.toEmail}"></span></p>
@@ -164,52 +199,49 @@
 
         <hr>
 
-        <!-- Message body -->
         <div class="mail-body">
             <p th:text="${selectedMail.message}"></p>
+        </div>
+
+        <div th:if="${selectedMail.attachments != null and !selectedMail.attachments.isEmpty()}">
+            <h4>Attachments</h4>
+            <ul>
+                <li th:each="att : ${selectedMail.attachments}">
+                    <a th:href="@{'/' + ${att.filePath}}"
+                       th:text="${att.fileName}"
+                       download></a>
+                </li>
+            </ul>
         </div>
 
     </div>
 </div>
 
-
 <script>
 function openCompose() {
     document.getElementById("composeModal").style.display = "flex";
 }
-
 function closeCompose() {
     document.getElementById("composeModal").style.display = "none";
 }
-
 function clearCompose() {
     document.getElementById("composeForm").reset();
 }
-
 function toggleProfileMenu() {
     const menu = document.getElementById("profileMenu");
     menu.style.display = menu.style.display === "block" ? "none" : "block";
 }
-
-// Close dropdown when clicking outside
 window.onclick = function(event) {
     if (!event.target.closest('.profile-container')) {
         const menu = document.getElementById("profileMenu");
         if (menu) menu.style.display = "none";
     }
 }
-
 function confirmDelete(mailId) {
-    const confirmAction = confirm(
-        "Are you sure you want to delete this mail permanently?\nThis action cannot be undone."
-    );
-
-    if (confirmAction) {
+    if (confirm("Are you sure you want to delete this mail permanently?")) {
         window.location.href = "/delete/" + mailId;
     }
 }
-
-
 </script>
 
 </body>

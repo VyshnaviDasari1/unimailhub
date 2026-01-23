@@ -5,9 +5,15 @@ import com.unimailhub.backend.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.unimailhub.backend.entity.LinkedAccount;
 import com.unimailhub.backend.entity.Mail;
 import com.unimailhub.backend.service.MailService;
+import com.unimailhub.backend.service.SettingsService;
+
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 
 
 
@@ -16,10 +22,14 @@ public class AuthController {
 
     private final UserService userService;
     private final MailService mailService;
+     private final SettingsService settingsService;
 
-    public AuthController(UserService userService, MailService mailService) {
+
+    public AuthController(UserService userService,
+         MailService mailService, SettingsService settingsService) {
         this.userService = userService;
         this.mailService = mailService;
+        this.settingsService = settingsService;
     }
 
     /* ===================== AUTH ===================== */
@@ -106,6 +116,8 @@ public class AuthController {
         }
 
         model.addAttribute("activeTab", tab);
+        model.addAttribute("linkedAccounts",
+            settingsService.getLinkedAccounts(email));
         model.addAttribute("search", search);
         model.addAttribute("userEmail", email);
 
@@ -116,17 +128,19 @@ public class AuthController {
     /* ===================== MAIL ACTIONS ===================== */
 
     @PostMapping("/send")
-    public String sendMail(Mail mail, HttpSession session) {
+    public String sendMail(
+            Mail mail,
+            @RequestParam("files") List<MultipartFile> files,
+            HttpSession session) {
+
         String fromEmail = (String) session.getAttribute("email");
-
-        if (fromEmail == null) {
-            return "redirect:/login";
-        }
-
         mail.setFromEmail(fromEmail);
-        mailService.sendMail(mail);
+
+        mailService.sendMail(mail, files);
+
         return "redirect:/home";
     }
+
 
     @GetMapping("/mail/{id}")
     public String readMail(@PathVariable Long id, Model model) {
@@ -156,4 +170,21 @@ public class AuthController {
         mailService.deletePermanently(id);
         return "redirect:/home?tab=trash";
     }
+    @PostMapping("/settings/save")
+public String saveSettings(@RequestParam String linkedEmail,
+                           @RequestParam String password,
+                           HttpSession session) {
+
+    String primaryEmail = (String) session.getAttribute("email");
+    if (primaryEmail == null) {
+        return "redirect:/login";
+    }
+
+    settingsService.addLinkedAccount(primaryEmail, linkedEmail, password);
+
+    // ✅ stay on settings page so user sees added email
+    return "redirect:/home?tab=settings";
+}
+
+
 }
