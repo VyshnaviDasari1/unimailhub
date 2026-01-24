@@ -11,6 +11,7 @@ import com.unimailhub.backend.entity.LinkedAccount;
 import com.unimailhub.backend.entity.Mail;
 import com.unimailhub.backend.service.MailService;
 import com.unimailhub.backend.service.SettingsService;
+import com.unimailhub.backend.repository.UserRepository;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
@@ -23,13 +24,15 @@ public class AuthController {
     private final UserService userService;
     private final MailService mailService;
      private final SettingsService settingsService;
+     public final UserRepository userRepository;
 
 
     public AuthController(UserService userService,
-         MailService mailService, SettingsService settingsService) {
+         MailService mailService, SettingsService settingsService, UserRepository userRepository) {
         this.userService = userService;
         this.mailService = mailService;
         this.settingsService = settingsService;
+        this.userRepository = userRepository;
     }
 
     /* ===================== AUTH ===================== */
@@ -185,6 +188,42 @@ public String saveSettings(@RequestParam String linkedEmail,
     // ✅ stay on settings page so user sees added email
     return "redirect:/home?tab=settings";
 }
+@GetMapping("/forgot-password")
+public String forgotPasswordPage() {
+    return "forgot-password";
+}
 
+@PostMapping("/forgot-password")
+public String handleForgotPassword(@RequestParam String email) {
+
+    System.out.println("Password reset requested for: " + email);
+    System.out.println("Reset link: http://localhost:8080/reset-password?email=" + email);
+
+    return "redirect:/login";
+}
+@GetMapping("/reset-password")
+public String resetPasswordPage(
+        @RequestParam String email,
+        Model model) {
+
+    model.addAttribute("email", email);
+    return "reset-password";
+}
+
+@PostMapping("/reset-password")
+public String handleResetPassword(
+        @RequestParam String email,
+        @RequestParam String newPassword) {
+
+    User user = userRepository.findByEmail(email);
+
+    if (user != null) {
+        user.setPassword(newPassword);
+        userRepository.save(user);
+        System.out.println("Password updated for: " + email);
+    }
+
+    return "redirect:/login";
+}
 
 }

@@ -4,70 +4,104 @@
 
 body {
     margin: 0;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f1f3f6;
     font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Page center */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f7fb;
 }
 
 /* Card */
 .auth-card {
-    width: 360px;
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    width: 460px;
+    padding: 40px 36px;
+    border-radius: 14px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    text-align: center;
 }
 
-/* Title */
-.auth-card h2 {
-    text-align: center;
-    margin-bottom: 25px;
+/* Header */
+.auth-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.logo-img {
+    width: 56px;
+    height: auto;
+    margin-bottom: 8px;
+}
+
+.brand-title {
+    font-size: 28px;
+    font-weight: 700;
     color: #1a73e8;
+    margin: 0;
+}
+
+/* Titles */
+.auth-title {
+    margin: 18px 0 20px;
+    font-size: 22px;
+    color: #333;
 }
 
 /* Inputs */
 .auth-card input {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 14px;
+    border-radius: 6px;
     border: 1px solid #ccc;
+    font-size: 15px;
 }
 
-/* Buttons */
+/* Button */
 .auth-card button {
     width: 100%;
-    padding: 10px;
-    background-color: #1a73e8;
+    padding: 12px;
+    background: #1a73e8;
     color: white;
     border: none;
-    border-radius: 4px;
-    font-weight: 600;
+    border-radius: 6px;
+    font-size: 16px;
     cursor: pointer;
 }
 
 .auth-card button:hover {
-    background-color: #155ab6;
+    background: #155ab6;
 }
 
 /* Links */
-.auth-card p {
-    text-align: center;
-    margin-top: 15px;
+.forgot-link {
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #1a73e8;
+    text-decoration: none;
 }
 
-.auth-card a {
+.switch-text {
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+.switch-text a {
     color: #1a73e8;
     text-decoration: none;
     font-weight: 500;
 }
 
-/* Error message */
+/* Error */
 .error {
     color: red;
-    text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }

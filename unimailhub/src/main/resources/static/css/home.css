@@ -468,4 +468,16 @@ li a {
     border-radius: 4px;
     cursor: pointer;
 }
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.sidebar-logo-img {
+    width: 36px;
+    height: 36px;
+}
 
