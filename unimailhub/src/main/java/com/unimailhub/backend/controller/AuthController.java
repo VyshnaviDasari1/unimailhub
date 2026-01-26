@@ -14,10 +14,18 @@ import com.unimailhub.backend.service.SettingsService;
 import com.unimailhub.backend.service.SecurityService;
 import com.unimailhub.backend.service.EmailService;
 import com.unimailhub.backend.repository.UserRepository;
+import com.unimailhub.backend.repository.AttachmentRepository;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 
 
 
@@ -30,17 +38,19 @@ public class AuthController {
      private final SecurityService securityService;
      private final EmailService emailService;
      public final UserRepository userRepository;
+     private final AttachmentRepository attachmentRepository;
 
 
     public AuthController(UserService userService,
          MailService mailService, SettingsService settingsService, UserRepository userRepository,
-         SecurityService securityService, EmailService emailService) {
+         SecurityService securityService, EmailService emailService, AttachmentRepository attachmentRepository) {
         this.userService = userService;
         this.mailService = mailService;
         this.settingsService = settingsService;
         this.userRepository = userRepository;
         this.securityService = securityService;
         this.emailService = emailService;
+        this.attachmentRepository = attachmentRepository;
     }
 
     /* ===================== AUTH ===================== */
@@ -295,6 +305,48 @@ public String handleResetPassword(
             return xForwardedFor.split(",")[0].trim();
         }
         return request.getRemoteAddr();
+    }
+
+    /* ===================== ATTACHMENT DOWNLOAD ===================== */
+
+    @GetMapping("/attachment/download/{id}")
+    public ResponseEntity<Resource> downloadAttachment(@PathVariable Long id, HttpSession session) {
+        String email = (String) session.getAttribute("email");
+        if (email == null) {
+            return ResponseEntity.status(403).build();
+        }
+
+        // Find the attachment
+        var attachmentOpt = attachmentRepository.findById(id);
+        if (attachmentOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        var attachment = attachmentOpt.get();
+
+        // Verify the user has access to this attachment (through the mail)
+        var mail = attachment.getMail();
+        if (!email.equalsIgnoreCase(mail.getToEmail()) && !email.equalsIgnoreCase(mail.getFromEmail())) {
+            return ResponseEntity.status(403).build();
+        }
+
+        try {
+            Path filePath = Paths.get(attachment.getFilePath());
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                                "attachment; filename=\"" + attachment.getFileName() + "\"")
+                        .header(HttpHeaders.CONTENT_TYPE, attachment.getFileType() != null ?
+                                attachment.getFileType() : "application/octet-stream")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
 }

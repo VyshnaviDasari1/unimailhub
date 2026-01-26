@@ -212,7 +212,7 @@
             <h4>Attachments</h4>
             <ul>
                 <li th:each="att : ${selectedMail.attachments}">
-                    <a th:href="@{'/' + ${att.filePath}}"
+                    <a th:href="@{'/attachment/download/' + ${att.id}}"
                        th:text="${att.fileName}"
                        download></a>
                 </li>

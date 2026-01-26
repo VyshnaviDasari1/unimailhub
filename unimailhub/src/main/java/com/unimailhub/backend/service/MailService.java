@@ -35,7 +35,7 @@ public class MailService {
 
             if (file.isEmpty()) continue;
 
-           String uploadDir = System.getProperty("user.dir") + "/uploads/";
+           String uploadDir = System.getProperty("user.dir") + "/../uploads/";
             File dir = new File(uploadDir);
             if (!dir.exists()) {
                 dir.mkdirs();
