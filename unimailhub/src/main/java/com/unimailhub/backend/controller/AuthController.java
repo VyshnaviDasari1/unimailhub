@@ -15,8 +15,9 @@ import com.unimailhub.backend.service.SecurityService;
 import com.unimailhub.backend.service.EmailService;
 import com.unimailhub.backend.repository.UserRepository;
 import com.unimailhub.backend.repository.AttachmentRepository;
-import com.unimailhub.backend.service.JobService;
+import com.unimailhub.backend.service.AlertService;
 import com.unimailhub.backend.service.AccountService;
+import com.unimailhub.backend.service.JobService;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,12 +44,13 @@ public class AuthController {
      private final AttachmentRepository attachmentRepository;
      private final AccountService accountService;
      private final JobService jobService;
+     private final AlertService alertService;
 
 
     public AuthController(UserService userService,
          MailService mailService, SettingsService settingsService, UserRepository userRepository,
          SecurityService securityService, EmailService emailService, AttachmentRepository attachmentRepository,
-         AccountService accountService, JobService jobService) {
+         AccountService accountService, JobService jobService, AlertService alertService) {
         this.userService = userService;
         this.mailService = mailService;
         this.settingsService = settingsService;
@@ -58,6 +60,7 @@ public class AuthController {
         this.attachmentRepository = attachmentRepository;
         this.accountService = accountService;
         this.jobService = jobService;
+        this.alertService = alertService;
     }
 
     /* ===================== AUTH ===================== */
@@ -181,6 +184,8 @@ public class AuthController {
                             : jobService.getUserJobs(email));
             model.addAttribute("keyword", keyword);
             model.addAttribute("jobType", jobType);
+        } else if ("alerts".equals(tab)) {
+            model.addAttribute("alerts", alertService.getAlerts(email));
         } else {
             model.addAttribute("mails",
                     hasSearch
@@ -245,6 +250,27 @@ public class AuthController {
 
         mailService.moveToTrash(id);
         return "redirect:/home?tab=" + tab;
+    }
+
+
+    /* ===================== ALERT ACTIONS ===================== */
+
+    @PostMapping("/alerts/mark-read/{id}")
+    public String markAlertAsRead(@PathVariable Long id, HttpSession session) {
+        String email = getActiveEmail(session);
+        if (email != null) {
+            alertService.markAsRead(id, email);
+        }
+        return "redirect:/home?tab=alerts";
+    }
+
+    @PostMapping("/alerts/mark-all-read")
+    public String markAllAlertsAsRead(HttpSession session) {
+        String email = getActiveEmail(session);
+        if (email != null) {
+            alertService.markAllAsRead(email);
+        }
+        return "redirect:/home?tab=alerts";
     }
 
     @GetMapping("/delete/{id}")

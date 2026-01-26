@@ -3,6 +3,7 @@ package com.unimailhub.backend.service;
 import com.unimailhub.backend.entity.Job;
 import com.unimailhub.backend.entity.Mail;
 import com.unimailhub.backend.repository.JobRepository;
+import com.unimailhub.backend.service.AlertService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,13 +15,20 @@ import java.util.regex.Pattern;
 public class JobService {
 
     private final JobRepository jobRepository;
+    private final AlertService alertService;
 
-    public JobService(JobRepository jobRepository) {
+    public JobService(JobRepository jobRepository, AlertService alertService) {
         this.jobRepository = jobRepository;
+        this.alertService = alertService;
     }
 
     // ✅ Create job from email (simple rule-based detection)
     public void processEmailForJob(Mail mail) {
+        // Skip if fromEmail is null to avoid errors
+        if (mail.getFromEmail() == null) {
+            return;
+        }
+
         String subject = mail.getSubject().toLowerCase();
         String content = mail.getMessage().toLowerCase();
 
@@ -35,6 +43,11 @@ public class JobService {
                     jobRepository.save(job);
                 }
             }
+        }
+
+        // Check for interview emails
+        if (subject.contains("interview") || content.contains("interview")) {
+            alertService.createAlert(mail.getToEmail(), "Interview email received: " + mail.getSubject());
         }
     }
 
@@ -192,6 +205,7 @@ public class JobService {
         if (job != null && job.getSourceEmail().getToEmail().equals(userEmail)) {
             job.setStatus("APPLIED");
             jobRepository.save(job);
+            alertService.createAlert(userEmail, "Job applied successfully: " + job.getJobTitle());
             return true;
         }
         return false;

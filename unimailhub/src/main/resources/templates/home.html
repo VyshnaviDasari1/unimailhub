@@ -66,6 +66,10 @@
                 <a href="/home?tab=jobs">💼 Jobs</a>
             </li>
 
+            <li th:classappend="${activeTab}=='alerts' ? 'active'">
+                <a href="/home?tab=alerts">🔔 Alerts</a>
+            </li>
+
             <li th:classappend="${activeTab}=='trash' ? 'active'">
                 <a href="/home?tab=trash">🗑 Trash</a>
             </li>
@@ -175,6 +179,34 @@
                         <a th:if="${job.applicationLink != null and !job.applicationLink.isEmpty()}" th:href="${job.applicationLink}" target="_blank" class="apply-btn">Apply Now</a>
                         <button th:if="${job.status != 'APPLIED'}" th:attr="onclick='markApplied(' + ${job.id} + ')'" class="mark-applied-btn">Mark Applied</button>
                         <span th:if="${job.status == 'APPLIED'}" class="applied-status">✅ Applied</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= ALERTS PANEL ================= -->
+        <div th:if="${activeTab == 'alerts'}" class="alerts-container">
+            <h3>🔔 Alerts</h3>
+
+            <div class="alerts-actions">
+                <form method="post" action="/alerts/mark-all-read" style="display: inline;">
+                    <button type="submit" class="mark-all-read-btn">Mark All as Read</button>
+                </form>
+            </div>
+
+            <div class="alerts-list">
+                <div th:if="${#lists.isEmpty(alerts)}" class="no-alerts">
+                    <p>No alerts at this time.</p>
+                </div>
+                <div th:each="alert : ${alerts}" class="alert-card" th:classappend="${alert.isRead} ? 'read' : 'unread'">
+                    <div class="alert-content">
+                        <p th:text="${alert.message}"></p>
+                        <small th:text="${#temporals.format(alert.createdAt, 'MMM dd, yyyy HH:mm')}"></small>
+                    </div>
+                    <div class="alert-actions" th:if="${!alert.isRead}">
+                        <form method="post" th:action="'/alerts/mark-read/' + ${alert.id}" style="display: inline;">
+                            <button type="submit" class="mark-read-btn">Mark as Read</button>
+                        </form>
                     </div>
                 </div>
             </div>
