@@ -18,6 +18,7 @@ public class UserService {
             return "Email already exists";
         }
         repo.save(user);
+        // TODO: Send welcome email
         return "success";
     }
 
@@ -26,5 +27,13 @@ public class UserService {
         if (existing == null) return "Invalid credentials";
         if (!existing.getPassword().equals(user.getPassword())) return "Invalid credentials";
         return "success";
+    }
+
+    public User findByEmail(String email) {
+        return repo.findByEmail(email);
+    }
+
+    public void updateUser(User user) {
+        repo.save(user);
     }
 }

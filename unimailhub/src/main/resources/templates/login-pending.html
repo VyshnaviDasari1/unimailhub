@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login Pending | UniMailHub</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        <!-- Brand -->
+        <div class="auth-header">
+            <img th:src="@{/images/unimailhub-logo.png}"
+                 alt="UniMailHub Logo"
+                 class="logo-img">
+            <h1 class="brand-title">UniMailHub</h1>
+        </div>
+
+        <!-- Page title -->
+        <h2 class="auth-title">Login Verification Required</h2>
+
+        <p th:if="${message}" th:text="${message}" class="message"></p>
+
+        <p class="info-text">
+            We've detected a login attempt from a new device or location.
+            For your security, we've sent a verification email to your account.
+        </p>
+
+        <p class="info-text">
+            Please check your email and click the appropriate link to approve or deny this login attempt.
+        </p>
+
+        <a th:href="@{/login}" class="back-link">Back to Login</a>
+
+    </div>
+</div>
+
+</body>
+</html>

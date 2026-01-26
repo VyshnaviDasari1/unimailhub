@@ -11,9 +11,12 @@ import com.unimailhub.backend.entity.LinkedAccount;
 import com.unimailhub.backend.entity.Mail;
 import com.unimailhub.backend.service.MailService;
 import com.unimailhub.backend.service.SettingsService;
+import com.unimailhub.backend.service.SecurityService;
+import com.unimailhub.backend.service.EmailService;
 import com.unimailhub.backend.repository.UserRepository;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 
@@ -24,15 +27,20 @@ public class AuthController {
     private final UserService userService;
     private final MailService mailService;
      private final SettingsService settingsService;
+     private final SecurityService securityService;
+     private final EmailService emailService;
      public final UserRepository userRepository;
 
 
     public AuthController(UserService userService,
-         MailService mailService, SettingsService settingsService, UserRepository userRepository) {
+         MailService mailService, SettingsService settingsService, UserRepository userRepository,
+         SecurityService securityService, EmailService emailService) {
         this.userService = userService;
         this.mailService = mailService;
         this.settingsService = settingsService;
         this.userRepository = userRepository;
+        this.securityService = securityService;
+        this.emailService = emailService;
     }
 
     /* ===================== AUTH ===================== */
@@ -43,7 +51,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(User user, HttpSession session, Model model) {
+    public String login(User user, HttpSession session, Model model, HttpServletRequest request) {
         String result = userService.login(user);
 
         if (!"success".equals(result)) {
@@ -51,8 +59,33 @@ public class AuthController {
             return "login";
         }
 
-        session.setAttribute("email", user.getEmail());
-        return "redirect:/home";
+        String ip = getClientIP(request);
+        String userAgent = request.getHeader("User-Agent");
+
+        User existingUser = userService.findByEmail(user.getEmail());
+
+        if (existingUser.getLastKnownIP() == null || existingUser.getLastKnownUserAgent() == null) {
+            // First login, set as known device
+            existingUser.setLastKnownIP(ip);
+            existingUser.setLastKnownUserAgent(userAgent);
+            userService.updateUser(existingUser);
+            session.setAttribute("email", user.getEmail());
+            return "redirect:/home";
+        }
+
+        if (securityService.isKnownDevice(existingUser, ip, userAgent) ||
+            securityService.hasApprovedLoginAttempt(user.getEmail(), ip, userAgent)) {
+            // Known device or previously approved
+            session.setAttribute("email", user.getEmail());
+            return "redirect:/home";
+        }
+
+        // New device, create pending attempt and send email
+        var attempt = securityService.createPendingLoginAttempt(user.getEmail(), ip, userAgent);
+        securityService.sendSecurityEmail(attempt);
+
+        model.addAttribute("message", "A security email has been sent to your email address. Please check your email and approve the login.");
+        return "login-pending";
     }
 
     @GetMapping("/register")
@@ -68,6 +101,8 @@ public class AuthController {
             model.addAttribute("error", result);
             return "register";
         }
+
+        emailService.sendWelcomeEmail(user.getEmail());
 
         return "redirect:/login";
     }
@@ -225,5 +260,41 @@ public String handleResetPassword(
 
     return "redirect:/login";
 }
+
+    /* ===================== SECURITY ENDPOINTS ===================== */
+
+    @GetMapping("/security/approve")
+    public String approveLogin(@RequestParam String token, HttpSession session, Model model) {
+        String result = securityService.processSecurityToken(token, "approve");
+        if ("approved".equals(result)) {
+            // Find the approved attempt and log the user in
+            var tokenEntity = securityService.getTokenByToken(token); // Need to add this method
+            if (tokenEntity != null) {
+                session.setAttribute("email", tokenEntity.getEmail());
+                return "redirect:/home";
+            }
+        }
+        model.addAttribute("error", "Link expired or already used");
+        return "login-denied";
+    }
+
+    @GetMapping("/security/deny")
+    public String denyLogin(@RequestParam String token, Model model) {
+        String result = securityService.processSecurityToken(token, "deny");
+        if ("denied".equals(result)) {
+            model.addAttribute("message", "Login attempt has been denied.");
+        } else {
+            model.addAttribute("error", "Link expired or already used");
+        }
+        return "login-denied";
+    }
+
+    private String getClientIP(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
+    }
 
 }

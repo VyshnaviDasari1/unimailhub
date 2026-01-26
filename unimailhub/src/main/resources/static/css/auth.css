@@ -105,3 +105,29 @@ body {
     color: red;
     margin-bottom: 12px;
 }
+
+/* Message */
+.message {
+    color: green;
+    margin-bottom: 12px;
+}
+
+/* Info text */
+.info-text {
+    color: #666;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+/* Back link */
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: #1a73e8;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}

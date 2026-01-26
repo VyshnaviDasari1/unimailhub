@@ -14,6 +14,8 @@ public class User {
     private String password;
     private String firstName;
     private String lastName;
+    private String lastKnownIP;
+    private String lastKnownUserAgent;
 
 
     public Long getId() {
@@ -53,6 +55,22 @@ public class User {
 
         public void setLastName(String lastName) {
             this.lastName = lastName;
+        }
+
+        public String getLastKnownIP() {
+            return lastKnownIP;
+        }
+
+        public void setLastKnownIP(String lastKnownIP) {
+            this.lastKnownIP = lastKnownIP;
+        }
+
+        public String getLastKnownUserAgent() {
+            return lastKnownUserAgent;
+        }
+
+        public void setLastKnownUserAgent(String lastKnownUserAgent) {
+            this.lastKnownUserAgent = lastKnownUserAgent;
         }
 
 }

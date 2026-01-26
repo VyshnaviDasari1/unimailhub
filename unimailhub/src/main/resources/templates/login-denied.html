@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Access Denied | UniMailHub</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        <!-- Brand -->
+        <div class="auth-header">
+            <img th:src="@{/images/unimailhub-logo.png}"
+                 alt="UniMailHub Logo"
+                 class="logo-img">
+            <h1 class="brand-title">UniMailHub</h1>
+        </div>
+
+        <!-- Page title -->
+        <h2 class="auth-title">Access Denied</h2>
+
+        <p th:if="${error}" th:text="${error}" class="error"></p>
+        <p th:if="${message}" th:text="${message}" class="message"></p>
+
+        <p class="info-text">
+            If you believe this is an error, please try logging in again or contact support.
+        </p>
+
+        <a th:href="@{/login}" class="back-link">Back to Login</a>
+
+    </div>
+</div>
+
+</body>
+</html>
