@@ -28,11 +28,12 @@ public class MailService {
     // ✅ SEND MAIL
     public void sendMail(Mail mail, List<MultipartFile> files) {
 
+    // Save mail for primary recipient (toEmail)
     Mail savedMail = mailRepository.save(mail);
 
+    // Handle attachments for primary mail
     if (files != null && !files.isEmpty()) {
         for (MultipartFile file : files) {
-
             if (file.isEmpty()) continue;
 
            String uploadDir = System.getProperty("user.dir") + "/../uploads/";
@@ -43,7 +44,6 @@ public class MailService {
 
             String filePath = uploadDir + System.currentTimeMillis()
                     + "_" + file.getOriginalFilename();
-
 
             try {
                 file.transferTo(new File(filePath));
@@ -57,10 +57,62 @@ public class MailService {
                 attachmentRepository.save(attachment);
 
          } catch (IOException e) {
-            e.printStackTrace(); // <-- IMPORTANT
+            e.printStackTrace();
             throw new RuntimeException("File upload failed", e);
         }
+        }
+    }
 
+    // Handle CC recipients - create separate mail records for each CC
+    if (mail.getCc() != null && !mail.getCc().trim().isEmpty()) {
+        String[] ccEmails = mail.getCc().split(",");
+        for (String ccEmail : ccEmails) {
+            ccEmail = ccEmail.trim();
+            if (!ccEmail.isEmpty()) {
+                // Create new mail record for CC recipient
+                Mail ccMail = new Mail();
+                ccMail.setFromEmail(mail.getFromEmail());
+                ccMail.setToEmail(ccEmail);
+                ccMail.setCc(mail.getCc()); // Keep original CC list
+                ccMail.setSubject(mail.getSubject());
+                ccMail.setMessage(mail.getMessage());
+                ccMail.setStarred(false);
+                ccMail.setTrashed(false);
+
+                Mail savedCcMail = mailRepository.save(ccMail);
+
+                // Copy attachments to CC mail
+                if (files != null && !files.isEmpty()) {
+                    for (MultipartFile file : files) {
+                        if (file.isEmpty()) continue;
+
+                        String uploadDir = System.getProperty("user.dir") + "/../uploads/";
+                        File dir = new File(uploadDir);
+                        if (!dir.exists()) {
+                            dir.mkdirs();
+                        }
+
+                        String filePath = uploadDir + System.currentTimeMillis()
+                                + "_" + file.getOriginalFilename();
+
+                        try {
+                            file.transferTo(new File(filePath));
+
+                            Attachment attachment = new Attachment();
+                            attachment.setFileName(file.getOriginalFilename());
+                            attachment.setFileType(file.getContentType());
+                            attachment.setFilePath(filePath);
+                            attachment.setMail(savedCcMail);
+
+                            attachmentRepository.save(attachment);
+
+                     } catch (IOException e) {
+                        e.printStackTrace();
+                        throw new RuntimeException("File upload failed", e);
+                    }
+                    }
+                }
+            }
         }
     }
 }
@@ -84,18 +136,12 @@ public class MailService {
 
     // ✅ STARRED
     public List<Mail> starred(String email) {
-        return mailRepository
-                .findByToEmailAndStarredTrueAndTrashedFalseOrderByIdDesc(
-                        email.toLowerCase()
-                );
+        return mailRepository.findStarredMails(email.toLowerCase());
     }
 
     // ✅ TRASH
     public List<Mail> trash(String email) {
-        return mailRepository
-                .findByTrashedTrueAndToEmailOrderByIdDesc(
-                        email.toLowerCase()
-                );
+        return mailRepository.findTrashedMails(email.toLowerCase());
     }
 
     // ✅ READ MAIL
@@ -146,11 +192,7 @@ public class MailService {
 
     // 🔍 SEARCH – STARRED
     public List<Mail> searchStarred(String email, String keyword) {
-        return mailRepository
-                .findByToEmailAndStarredTrueAndSubjectContainingIgnoreCaseAndTrashedFalseOrderByIdDesc(
-                        email.toLowerCase(),
-                        keyword
-                );
+        return mailRepository.findStarredMailsBySubject(email.toLowerCase(), keyword);
     }
 
 }
