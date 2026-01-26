@@ -15,6 +15,7 @@ import com.unimailhub.backend.service.SecurityService;
 import com.unimailhub.backend.service.EmailService;
 import com.unimailhub.backend.repository.UserRepository;
 import com.unimailhub.backend.repository.AttachmentRepository;
+import com.unimailhub.backend.service.JobService;
 import com.unimailhub.backend.service.AccountService;
 
 import jakarta.servlet.http.HttpSession;
@@ -41,12 +42,13 @@ public class AuthController {
      public final UserRepository userRepository;
      private final AttachmentRepository attachmentRepository;
      private final AccountService accountService;
+     private final JobService jobService;
 
 
     public AuthController(UserService userService,
          MailService mailService, SettingsService settingsService, UserRepository userRepository,
          SecurityService securityService, EmailService emailService, AttachmentRepository attachmentRepository,
-         AccountService accountService) {
+         AccountService accountService, JobService jobService) {
         this.userService = userService;
         this.mailService = mailService;
         this.settingsService = settingsService;
@@ -55,6 +57,7 @@ public class AuthController {
         this.emailService = emailService;
         this.attachmentRepository = attachmentRepository;
         this.accountService = accountService;
+        this.jobService = jobService;
     }
 
     /* ===================== AUTH ===================== */
@@ -147,6 +150,8 @@ public class AuthController {
     public String home(
             @RequestParam(defaultValue = "inbox") String tab,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String jobType,
             @RequestParam(required = false) Long read,
             HttpSession session,
             Model model) {
@@ -155,6 +160,7 @@ public class AuthController {
         if (email == null) return "redirect:/login";
 
         boolean hasSearch = (search != null && !search.trim().isEmpty());
+        boolean hasJobSearch = (keyword != null && !keyword.trim().isEmpty()) || (jobType != null && !jobType.trim().isEmpty());
 
         if ("trash".equals(tab)) {
             model.addAttribute("mails", mailService.trash(email));
@@ -168,6 +174,13 @@ public class AuthController {
                     hasSearch
                             ? mailService.searchSent(email, search)
                             : mailService.sent(email));
+        } else if ("jobs".equals(tab)) {
+            model.addAttribute("jobs",
+                    hasJobSearch
+                            ? jobService.searchJobs(email, keyword, jobType, null)
+                            : jobService.getUserJobs(email));
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("jobType", jobType);
         } else {
             model.addAttribute("mails",
                     hasSearch
@@ -238,6 +251,15 @@ public class AuthController {
     public String deleteMailPermanently(@PathVariable Long id) {
         mailService.deletePermanently(id);
         return "redirect:/home?tab=trash";
+    }
+
+    @GetMapping("/jobs/apply/{id}")
+    public String markJobApplied(@PathVariable Long id, HttpSession session) {
+        String email = getActiveEmail(session);
+        if (email != null) {
+            jobService.applyToJob(id, email);
+        }
+        return "redirect:/home?tab=jobs";
     }
 
 @GetMapping("/forgot-password")

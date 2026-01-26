@@ -4,6 +4,7 @@ import com.unimailhub.backend.entity.Attachment;
 import com.unimailhub.backend.entity.Mail;
 import com.unimailhub.backend.repository.AttachmentRepository;
 import com.unimailhub.backend.repository.MailRepository;
+import com.unimailhub.backend.service.JobService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,11 +17,14 @@ public class MailService {
 
     private final MailRepository mailRepository;
     private final AttachmentRepository attachmentRepository;
+    private final JobService jobService;
 
     public MailService(MailRepository mailRepository,
-                   AttachmentRepository attachmentRepository) {
+                   AttachmentRepository attachmentRepository,
+                   JobService jobService) {
     this.mailRepository = mailRepository;
     this.attachmentRepository = attachmentRepository;
+    this.jobService = jobService;
 
 }
 
@@ -30,6 +34,9 @@ public class MailService {
 
     // Save mail for primary recipient (toEmail)
     Mail savedMail = mailRepository.save(mail);
+
+    // Process job opportunities from the email
+    jobService.processEmailForJob(savedMail);
 
     // Handle attachments for primary mail
     if (files != null && !files.isEmpty()) {
@@ -80,6 +87,9 @@ public class MailService {
                 ccMail.setTrashed(false);
 
                 Mail savedCcMail = mailRepository.save(ccMail);
+
+                // Process job opportunities for CC recipient
+                jobService.processEmailForJob(savedCcMail);
 
                 // Copy attachments to CC mail
                 if (files != null && !files.isEmpty()) {
