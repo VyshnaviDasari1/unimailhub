@@ -15,10 +15,21 @@
         </div>
 
         <div id="profileMenu" class="profile-menu">
-            <p class="profile-email" th:text="${userEmail}"></p>
+            <p class="profile-email" th:text="${activeAccount}"></p>
             <hr>
-            <a href="/home?tab=settings">⚙ Settings</a>
-            <a href="/logout">🚪 Logout</a>
+
+            <!-- Account switching -->
+            <div class="account-list">
+                <div th:each="account : ${sessionAccounts}" class="account-item">
+                    <span th:if="${account == activeAccount}" class="active-account" th:text="${account}">✓</span>
+                    <a th:if="${account != activeAccount}" th:href="@{'/switch-account?email=' + ${account}}" th:text="${account}"></a>
+                </div>
+            </div>
+
+            <hr>
+            <a th:href="@{/add-account}">➕ Add another account</a>
+            <a th:href="@{/home?tab=settings}">⚙ Settings</a>
+            <a th:href="@{'/logout-account?email=' + ${activeAccount}}">🚪 Logout</a>
         </div>
     </div>
 
@@ -123,34 +134,41 @@
 
             <h2>Settings</h2>
 
-            <div class="settings-card">
-                <h3>Add Another Email</h3>
-                <form method="post" action="/settings/save">
-                    <input type="email" name="linkedEmail" placeholder="Email address" required>
-                    <input type="password" name="password" placeholder="Password" required>
-                    <button type="submit">Save</button>
-                </form>
-            </div>
-
-            <div class="settings-card">
-                <h3>Linked Accounts</h3>
-                <ul>
-                    <li th:each="acc : ${linkedAccounts}">
-                        <span th:text="${acc.linkedEmail}"></span>
-                    </li>
-                </ul>
-            </div>
-
             <div class="settings-card about-card">
                 <h3>About UniMailHub</h3>
                 <p>
                     <b>UniMailHub</b> is a web-based email management system inspired by Gmail.
-                    It allows users to send and receive emails with attachments, manage inboxes,
-                    starred mails, search emails, and securely delete messages.
+                    It provides a clean, intuitive interface for managing your email communications.
+                </p>
+
+                <h4>Core Features</h4>
+                <ul>
+                    <li>📥 Inbox - Receive and organize incoming emails</li>
+                    <li>📤 Sent - Track emails you've sent</li>
+                    <li>⭐ Priority - Star important emails for quick access</li>
+                    <li>🔔 Alerts - Security notifications for new devices</li>
+                    <li>💼 Jobs - Background email processing</li>
+                    <li>🔒 Security - Multi-device login verification</li>
+                </ul>
+
+                <h4>Technology Stack</h4>
+                <ul>
+                    <li><b>Backend:</b> Spring Boot (Java)</li>
+                    <li><b>Frontend:</b> Thymeleaf, HTML5, CSS3, JavaScript</li>
+                    <li><b>Database:</b> MySQL</li>
+                    <li><b>Email:</b> MailHog (Development), SMTP (Production)</li>
+                    <li><b>Build:</b> Maven</li>
+                </ul>
+
+                <h4>Project Information</h4>
+                <p>
+                    This application demonstrates modern web development practices and enterprise-level
+                    email system architecture. It includes features like multi-account support, secure
+                    authentication, file attachments, and responsive design.
                 </p>
                 <p>
-                    Built using Spring Boot, Thymeleaf, and MySQL, this application demonstrates
-                    a real-world enterprise email workflow.
+                    <b>Version:</b> 1.0.0<br>
+                    <b>Built for:</b> Educational and demonstration purposes
                 </p>
             </div>
         </div>

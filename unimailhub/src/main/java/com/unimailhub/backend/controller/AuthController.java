@@ -15,6 +15,7 @@ import com.unimailhub.backend.service.SecurityService;
 import com.unimailhub.backend.service.EmailService;
 import com.unimailhub.backend.repository.UserRepository;
 import com.unimailhub.backend.repository.AttachmentRepository;
+import com.unimailhub.backend.service.AccountService;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,11 +40,13 @@ public class AuthController {
      private final EmailService emailService;
      public final UserRepository userRepository;
      private final AttachmentRepository attachmentRepository;
+     private final AccountService accountService;
 
 
     public AuthController(UserService userService,
          MailService mailService, SettingsService settingsService, UserRepository userRepository,
-         SecurityService securityService, EmailService emailService, AttachmentRepository attachmentRepository) {
+         SecurityService securityService, EmailService emailService, AttachmentRepository attachmentRepository,
+         AccountService accountService) {
         this.userService = userService;
         this.mailService = mailService;
         this.settingsService = settingsService;
@@ -51,6 +54,7 @@ public class AuthController {
         this.securityService = securityService;
         this.emailService = emailService;
         this.attachmentRepository = attachmentRepository;
+        this.accountService = accountService;
     }
 
     /* ===================== AUTH ===================== */
@@ -62,9 +66,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public String login(User user, HttpSession session, Model model, HttpServletRequest request) {
-        String result = userService.login(user);
+        User authenticatedUser = accountService.authenticate(user.getEmail(), user.getPassword());
 
-        if (!"success".equals(result)) {
+        if (authenticatedUser == null) {
             model.addAttribute("error", "Invalid credentials");
             return "login";
         }
@@ -72,30 +76,30 @@ public class AuthController {
         String ip = getClientIP(request);
         String userAgent = request.getHeader("User-Agent");
 
-        User existingUser = userService.findByEmail(user.getEmail());
-
-        if (existingUser.getLastKnownIP() == null || existingUser.getLastKnownUserAgent() == null) {
+        // Check if this is a new device login
+        if (authenticatedUser.getLastKnownIP() == null || authenticatedUser.getLastKnownUserAgent() == null) {
             // First login, set as known device
-            existingUser.setLastKnownIP(ip);
-            existingUser.setLastKnownUserAgent(userAgent);
-            userService.updateUser(existingUser);
-            session.setAttribute("email", user.getEmail());
-            return "redirect:/home";
+            authenticatedUser.setLastKnownIP(ip);
+            authenticatedUser.setLastKnownUserAgent(userAgent);
+            userService.updateUser(authenticatedUser);
+        } else if (!securityService.isKnownDevice(authenticatedUser, ip, userAgent) &&
+                   !securityService.hasApprovedLoginAttempt(user.getEmail(), ip, userAgent)) {
+            // New device, create pending attempt and send email
+            var attempt = securityService.createPendingLoginAttempt(user.getEmail(), ip, userAgent);
+            securityService.sendSecurityEmail(attempt);
+
+            model.addAttribute("message", "A security email has been sent to your email address. Please check your email and approve the login.");
+            return "login-pending";
         }
 
-        if (securityService.isKnownDevice(existingUser, ip, userAgent) ||
-            securityService.hasApprovedLoginAttempt(user.getEmail(), ip, userAgent)) {
-            // Known device or previously approved
-            session.setAttribute("email", user.getEmail());
-            return "redirect:/home";
-        }
+        // Add account to session
+        AccountService.SessionAccounts sessionAccounts = getSessionAccounts(session);
+        sessionAccounts.addAccount(user.getEmail());
 
-        // New device, create pending attempt and send email
-        var attempt = securityService.createPendingLoginAttempt(user.getEmail(), ip, userAgent);
-        securityService.sendSecurityEmail(attempt);
+        // Set as active account
+        setActiveEmail(session, user.getEmail());
 
-        model.addAttribute("message", "A security email has been sent to your email address. Please check your email and approve the login.");
-        return "login-pending";
+        return "redirect:/home";
     }
 
     @GetMapping("/register")
@@ -119,8 +123,22 @@ public class AuthController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/login";
+        AccountService.SessionAccounts sessionAccounts = getSessionAccounts(session);
+        String activeEmail = getActiveEmail(session);
+
+        if (activeEmail != null) {
+            sessionAccounts.removeAccount(activeEmail);
+        }
+
+        // If no accounts left, invalidate session
+        if (sessionAccounts.getAccounts().isEmpty()) {
+            session.invalidate();
+            return "redirect:/login";
+        }
+
+        // Otherwise, switch to first available account
+        setActiveEmail(session, sessionAccounts.getActiveAccount());
+        return "redirect:/home";
     }
 
     /* ===================== HOME (CENTER PANEL LOGIC) ===================== */
@@ -133,7 +151,7 @@ public class AuthController {
             HttpSession session,
             Model model) {
 
-        String email = (String) session.getAttribute("email");
+        String email = getActiveEmail(session);
         if (email == null) return "redirect:/login";
 
         boolean hasSearch = (search != null && !search.trim().isEmpty());
@@ -164,10 +182,13 @@ public class AuthController {
         }
 
         model.addAttribute("activeTab", tab);
-        model.addAttribute("linkedAccounts",
-            settingsService.getLinkedAccounts(email));
         model.addAttribute("search", search);
         model.addAttribute("userEmail", email);
+
+        // Add session accounts for profile menu
+        AccountService.SessionAccounts sessionAccounts = getSessionAccounts(session);
+        model.addAttribute("sessionAccounts", sessionAccounts.getAccounts());
+        model.addAttribute("activeAccount", email);
 
         return "home";
     }
@@ -218,21 +239,7 @@ public class AuthController {
         mailService.deletePermanently(id);
         return "redirect:/home?tab=trash";
     }
-    @PostMapping("/settings/save")
-public String saveSettings(@RequestParam String linkedEmail,
-                           @RequestParam String password,
-                           HttpSession session) {
 
-    String primaryEmail = (String) session.getAttribute("email");
-    if (primaryEmail == null) {
-        return "redirect:/login";
-    }
-
-    settingsService.addLinkedAccount(primaryEmail, linkedEmail, password);
-
-    // ✅ stay on settings page so user sees added email
-    return "redirect:/home?tab=settings";
-}
 @GetMapping("/forgot-password")
 public String forgotPasswordPage() {
     return "forgot-password";
@@ -299,15 +306,78 @@ public String handleResetPassword(
         return "login-denied";
     }
 
-    private String getClientIP(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
+    private AccountService.SessionAccounts getSessionAccounts(HttpSession session) {
+        AccountService.SessionAccounts accounts = (AccountService.SessionAccounts) session.getAttribute("sessionAccounts");
+        if (accounts == null) {
+            accounts = new AccountService.SessionAccounts();
+            session.setAttribute("sessionAccounts", accounts);
         }
-        return request.getRemoteAddr();
+        return accounts;
     }
 
-    /* ===================== ATTACHMENT DOWNLOAD ===================== */
+    private String getActiveEmail(HttpSession session) {
+        AccountService.SessionAccounts accounts = getSessionAccounts(session);
+        return accounts.getActiveAccount();
+    }
+
+    private void setActiveEmail(HttpSession session, String email) {
+        AccountService.SessionAccounts accounts = getSessionAccounts(session);
+        accounts.setActiveAccount(email);
+        session.setAttribute("email", email); // Keep backward compatibility
+    }
+
+    /* ===================== ACCOUNT MANAGEMENT ===================== */
+
+    @GetMapping("/add-account")
+    public String showAddAccountForm() {
+        return "add-account";
+    }
+
+    @PostMapping("/add-account")
+    public String addAccount(User user, HttpSession session, Model model) {
+        User authenticatedUser = accountService.authenticate(user.getEmail(), user.getPassword());
+
+        if (authenticatedUser == null) {
+            model.addAttribute("error", "Invalid credentials");
+            return "add-account";
+        }
+
+        // Add account to session
+        AccountService.SessionAccounts sessionAccounts = getSessionAccounts(session);
+        sessionAccounts.addAccount(user.getEmail());
+
+        // Set as active account
+        setActiveEmail(session, user.getEmail());
+
+        return "redirect:/home";
+    }
+
+    @GetMapping("/switch-account")
+    public String switchAccount(@RequestParam String email, HttpSession session) {
+        AccountService.SessionAccounts sessionAccounts = getSessionAccounts(session);
+
+        if (sessionAccounts.hasAccount(email)) {
+            setActiveEmail(session, email);
+        }
+
+        return "redirect:/home";
+    }
+
+    @GetMapping("/logout-account")
+    public String logoutAccount(@RequestParam String email, HttpSession session) {
+        AccountService.SessionAccounts sessionAccounts = getSessionAccounts(session);
+        sessionAccounts.removeAccount(email);
+
+        // If no accounts left, redirect to login
+        if (sessionAccounts.getAccounts().isEmpty()) {
+            session.invalidate();
+            return "redirect:/login";
+        }
+
+        // Otherwise, switch to first available account
+        setActiveEmail(session, sessionAccounts.getActiveAccount());
+        return "redirect:/home";
+    }
 
     @GetMapping("/attachment/download/{id}")
     public ResponseEntity<Resource> downloadAttachment(@PathVariable Long id, HttpSession session) {
@@ -347,6 +417,14 @@ public String handleResetPassword(
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
+    }
+
+    private String getClientIP(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 
 }

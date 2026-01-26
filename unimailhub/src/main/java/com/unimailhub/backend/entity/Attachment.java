@@ -39,9 +39,5 @@ public class Attachment {
     public Mail getMail() {
         return mail;
     }
-    
-    
-
-    // getters optional for now
 }
 

@@ -391,6 +391,35 @@ li a {
     word-break: break-all;
 }
 
+.account-list {
+    margin: 8px 0;
+}
+
+.account-item {
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+}
+
+.account-item:hover {
+    background-color: #f0f0f0;
+}
+
+.account-item a {
+    color: #333;
+    text-decoration: none;
+    font-size: 13px;
+    word-break: break-all;
+    display: block;
+}
+
+.active-account {
+    color: #1a73e8;
+    font-weight: bold;
+    font-size: 13px;
+    word-break: break-all;
+}
+
 .mail-actions {
     display: flex;
     gap: 12px;
