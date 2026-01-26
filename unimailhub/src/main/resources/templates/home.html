@@ -139,7 +139,7 @@
             <div class="jobs-filters">
                 <form method="get" action="/home" class="jobs-search-form">
                     <input type="hidden" name="tab" value="jobs">
-                    <input type="text" name="keyword" placeholder="Search jobs by title or company" th:value="${keyword}">
+                    <input type="text" name="keyword" placeholder="Search jobs by title, company, subject, or description" th:value="${keyword}">
                     <select name="jobType">
                         <option value="">All Types</option>
                         <option value="Full-time" th:selected="${jobType == 'Full-time'}">Full-time</option>

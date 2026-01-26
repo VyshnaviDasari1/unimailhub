@@ -175,10 +175,12 @@ public class JobService {
             startDate = LocalDateTime.now().minusDays(7);
         }
 
-        if ((keyword == null || keyword.trim().isEmpty()) &&
-            (jobType == null || jobType.trim().isEmpty()) &&
-            startDate == null) {
-            return jobRepository.findByUserEmail(email);
+        // Process keyword: trim, lowercase, convert empty to null
+        if (keyword != null) {
+            keyword = keyword.trim().toLowerCase();
+            if (keyword.isEmpty()) {
+                keyword = null;
+            }
         }
 
         return jobRepository.findByUserEmailWithFilters(email, keyword, jobType, startDate);
